@@ -6,9 +6,15 @@ import kilometrajeRoutes from './routes/kilometraje.routes';
 import cors from 'cors';
 
 const app = express();
-app.use(cors({
-    origin: 'http://localhost:5173'
-  }));
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+const corsOptions = {
+  origin: isProduction ? process.env.CLIENT_ORIGIN : '*',
+  //credentials: isProduction, // Solo se usa si usa cookies o autenticación
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api/kilometraje', kilometrajeRoutes);

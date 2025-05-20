@@ -3,6 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import kilometrajeRoutes from './routes/kilometraje.routes';
+import vehiculoRoutes from "./routes/vehiculo.routes";
 import cors from 'cors';
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api/kilometraje', kilometrajeRoutes);
+app.use('/api/vehiculo', vehiculoRoutes);
 
 const PORT = process.env.PORT || 3000;
 

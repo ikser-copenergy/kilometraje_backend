@@ -1,22 +1,34 @@
 import { pool } from '../database/connection';
 import { Kilometraje } from '../types/kilometraje';
-import { RowDataPacket } from 'mysql2';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
+
+const KILOMETRAJE_FIELDS = `
+  id, kilometraje_inicio, kilometraje_fin, fecha,
+  nombre_conductor, vehiculo, motivo_uso, id_vehiculo
+`;
 
 export const getAllKilometrajes = async (
   fechaInicio?: string,
-  fechaFin?: string
+  fechaFin?: string,
+  limit?: number,
+  offset?: number
 ): Promise<Kilometraje[]> => {
   try {
-    let query = 'SELECT * FROM kilometraje_vehiculos';
+    let query = `SELECT ${KILOMETRAJE_FIELDS} FROM kilometraje_vehiculos`;
     const params: any[] = [];
 
     if (fechaInicio && fechaFin) {
-      // Inicio del día con milisegundos exactos
       const start = `${fechaInicio} 00:00:00.000`;
-      // Fin del día con milisegundos exactos
       const end = `${fechaFin} 23:59:59.999`;
       query += ' WHERE fecha BETWEEN ? AND ?';
       params.push(start, end);
+    }
+
+    query += ' ORDER BY fecha DESC';
+
+    if (limit !== undefined && offset !== undefined) {
+      query += ' LIMIT ? OFFSET ?';
+      params.push(limit, offset);
     }
 
     const [rows] = await pool.query(query, params);
@@ -27,10 +39,12 @@ export const getAllKilometrajes = async (
   }
 };
 
-
 export const getKilometrajeById = async (id: number): Promise<Kilometraje | null> => {
   try {
-    const [rows] = await pool.query('SELECT * FROM kilometraje_vehiculos WHERE id = ?', [id]);
+    const [rows] = await pool.query(
+      `SELECT ${KILOMETRAJE_FIELDS} FROM kilometraje_vehiculos WHERE id = ?`,
+      [id]
+    );
     const result = rows as Kilometraje[];
     return result[0] || null;
   } catch (error) {
@@ -43,8 +57,11 @@ export const createKilometraje = async (
   data: Omit<Kilometraje, 'id'>
 ): Promise<Kilometraje> => {
   try {
-    const [result] = await pool.query('INSERT INTO kilometraje_vehiculos SET ?', [data]);
-    return { id: (result as any).insertId, ...data };
+    const [result] = await pool.query<ResultSetHeader>(
+      'INSERT INTO kilometraje_vehiculos SET ?',
+      [data]
+    );
+    return { id: result.insertId, ...data };
   } catch (error) {
     console.error('Error al crear el registro:', error);
     throw new Error('No se pudo crear el registro');
@@ -56,9 +73,11 @@ export const updateKilometraje = async (
   data: Omit<Kilometraje, 'id'>
 ): Promise<void> => {
   try {
-    const [result] = await pool.query('UPDATE kilometraje_vehiculos SET ? WHERE id = ?', [data, id]);
-    const info = result as RowDataPacket;
-    if ((info as any).affectedRows === 0) {
+    const [result] = await pool.query<ResultSetHeader>(
+      'UPDATE kilometraje_vehiculos SET ? WHERE id = ?',
+      [data, id]
+    );
+    if (result.affectedRows === 0) {
       throw new Error('Registro no encontrado para actualizar');
     }
   } catch (error) {
@@ -69,9 +88,11 @@ export const updateKilometraje = async (
 
 export const deleteKilometraje = async (id: number): Promise<void> => {
   try {
-    const [result] = await pool.query('DELETE FROM kilometraje_vehiculos WHERE id = ?', [id]);
-    const info = result as RowDataPacket;
-    if ((info as any).affectedRows === 0) {
+    const [result] = await pool.query<ResultSetHeader>(
+      'DELETE FROM kilometraje_vehiculos WHERE id = ?',
+      [id]
+    );
+    if (result.affectedRows === 0) {
       throw new Error('Registro no encontrado para eliminar');
     }
   } catch (error) {

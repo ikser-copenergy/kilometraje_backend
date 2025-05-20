@@ -2,15 +2,31 @@ import { pool } from '../database/connection';
 import { Kilometraje } from '../types/kilometraje';
 import { RowDataPacket } from 'mysql2';
 
-export const getAllKilometrajes = async (): Promise<Kilometraje[]> => {
+export const getAllKilometrajes = async (
+  fechaInicio?: string,
+  fechaFin?: string
+): Promise<Kilometraje[]> => {
   try {
-    const [rows] = await pool.query('SELECT * FROM kilometraje_vehiculos');
+    let query = 'SELECT * FROM kilometraje_vehiculos';
+    const params: any[] = [];
+
+    if (fechaInicio && fechaFin) {
+      // Inicio del día con milisegundos exactos
+      const start = `${fechaInicio} 00:00:00.000`;
+      // Fin del día con milisegundos exactos
+      const end = `${fechaFin} 23:59:59.999`;
+      query += ' WHERE fecha BETWEEN ? AND ?';
+      params.push(start, end);
+    }
+
+    const [rows] = await pool.query(query, params);
     return rows as Kilometraje[];
   } catch (error) {
     console.error('Error al obtener los registros:', error);
     throw new Error('No se pudieron obtener los datos');
   }
 };
+
 
 export const getKilometrajeById = async (id: number): Promise<Kilometraje | null> => {
   try {

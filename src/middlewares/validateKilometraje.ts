@@ -4,13 +4,14 @@ export const validateKilometrajeBody = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+):void => {
   if (
     !req.is('application/json') ||
     typeof req.body !== 'object' ||
     req.body === null
   ) {
-    return res.status(400).json({ message: 'Se requiere un cuerpo JSON válido' });
+    res.status(400).json({ message: 'Se requiere un cuerpo JSON válido' });
+    return;
   }
 
   const {
@@ -30,7 +31,8 @@ export const validateKilometrajeBody = (
     !vehiculo ||
     !motivo_uso
   ) {
-    return res.status(400).json({ message: 'Faltan campos requeridos' });
+    res.status(400).json({ message: 'Faltan campos requeridos' });
+    return;
   }
 
   if (
@@ -40,16 +42,20 @@ export const validateKilometrajeBody = (
     typeof vehiculo !== 'string' ||
     typeof motivo_uso !== 'string'
   ) {
-    return res.status(400).json({ message: 'Tipos de datos inválidos' });
+    res.status(400).json({ message: 'Tipos de datos inválidos' });
+    return; 
   }
 
   const timestamp = Date.parse(fecha);
   if (isNaN(timestamp)) {
-    return res.status(400).json({ message: 'Formato de fecha inválido (esperado: ISO 8601)' });
+    res.status(400).json({ message: 'Formato de fecha inválido (esperado: ISO 8601)' });
+    return;
   }
 
-  if(kilometraje_fin <= kilometraje_inicio)
-    return res.status(400).json({ message: 'Kilometraje final debe ser mayor que kilometraje inicial'});
+  if(kilometraje_fin <= kilometraje_inicio){
+    res.status(400).json({ message: 'Kilometraje final debe ser mayor que kilometraje inicial'});
+    return;
+  }
 
   next();
 };

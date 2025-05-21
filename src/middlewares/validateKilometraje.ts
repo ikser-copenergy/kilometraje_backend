@@ -19,7 +19,7 @@ export const validateKilometrajeBody = (
     kilometraje_fin,
     fecha,
     nombre_conductor,
-    vehiculo,
+    id_vehiculo,
     motivo_uso,
   } = req.body;
 
@@ -28,7 +28,7 @@ export const validateKilometrajeBody = (
     kilometraje_fin == null ||
     !fecha ||
     !nombre_conductor ||
-    !vehiculo ||
+    id_vehiculo ==0 ||
     !motivo_uso
   ) {
     res.status(400).json({ message: 'Faltan campos requeridos' });
@@ -39,7 +39,7 @@ export const validateKilometrajeBody = (
     typeof kilometraje_inicio !== 'number' ||
     typeof kilometraje_fin !== 'number' ||
     typeof nombre_conductor !== 'string' ||
-    typeof vehiculo !== 'string' ||
+    typeof id_vehiculo !== 'number' ||
     typeof motivo_uso !== 'string'
   ) {
     res.status(400).json({ message: 'Tipos de datos inválidos' });

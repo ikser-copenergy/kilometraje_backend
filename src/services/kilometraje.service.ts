@@ -14,7 +14,13 @@ export const getAllKilometrajes = async (
   offset?: number
 ): Promise<Kilometraje[]> => {
   try {
-    let query = `SELECT ${KILOMETRAJE_FIELDS} FROM kilometraje_vehiculos`;
+    let query = 
+    `
+    SELECT km.id, kilometraje_inicio, kilometraje_fin, fecha, nombre_conductor, v.nombre as vehiculo, motivo_uso, id_vehiculo 
+      FROM kilometraje_vehiculos km
+      INNER JOIN vehiculos v 
+      ON km.id_vehiculo = v.id
+    `;
     const params: any[] = [];
 
     if (fechaInicio && fechaFin) {

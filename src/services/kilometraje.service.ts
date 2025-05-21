@@ -37,7 +37,7 @@ export const getAllKilometrajes = async (
       params.push(limit, offset);
     }
 
-    const [rows] = await pool.query(query, params);
+    const [rows] = await pool.query<RowDataPacket[]>(query, params);
     return rows as Kilometraje[];
   } catch (error) {
     console.error('Error al obtener los registros:', error);
@@ -47,7 +47,7 @@ export const getAllKilometrajes = async (
 
 export const getKilometrajeById = async (id: number): Promise<Kilometraje | null> => {
   try {
-    const [rows] = await pool.query(
+    const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT ${KILOMETRAJE_FIELDS} FROM kilometraje_vehiculos WHERE id = ?`,
       [id]
     );
@@ -95,14 +95,14 @@ export const updateKilometraje = async (
 export const deleteKilometraje = async (id: number): Promise<void> => {
   try {
     const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM kilometraje_vehiculos WHERE id = ?',
+      'UPDATE kilometraje_vehiculos SET activo = FALSE WHERE id = ? AND activo = TRUE',
       [id]
     );
     if (result.affectedRows === 0) {
-      throw new Error('Registro no encontrado para eliminar');
+      throw new Error('Registro no encontrado o ya inactivo');
     }
   } catch (error) {
-    console.error(`Error al eliminar el registro con id ${id}:`, error);
+    console.error(`Error al realizar borrado lógico del registro con id ${id}:`, error);
     throw new Error('No se pudo eliminar el registro');
   }
 };

@@ -7,5 +7,7 @@ export interface Kilometraje {
     vehiculo?: string;
     motivo_uso: string;
     id_vehiculo: number;
+    fecha_creacion: Date;
+    activo: boolean;
   }
   
